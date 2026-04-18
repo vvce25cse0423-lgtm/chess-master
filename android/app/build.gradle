@@ -4,10 +4,18 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
 android {
     namespace "com.example.chess_master"
     compileSdk 34
-    ndkVersion "25.1.8937393"
+    ndkVersion "26.3.11579264"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -26,8 +34,8 @@ android {
         applicationId "com.example.chess_master"
         minSdk 21
         targetSdk 34
-        versionCode flutter.versionCode
-        versionName flutter.versionName
+        versionCode localProperties.getProperty("flutter.versionCode")?.toInteger() ?: 1
+        versionName localProperties.getProperty("flutter.versionName") ?: "1.0.0"
     }
 
     buildTypes {
