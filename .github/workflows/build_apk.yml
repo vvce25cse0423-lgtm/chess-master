@@ -13,18 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Java 17
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -32,58 +29,35 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 4. Flutter doctor (debug info)
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      # 5. Write local.properties
+      # CRITICAL: must run before any Gradle step
       - name: Write local.properties
         run: |
-          echo "flutter.sdk=$FLUTTER_ROOT"       >  android/local.properties
-          echo "sdk.dir=$ANDROID_HOME"            >> android/local.properties
-          echo "flutter.buildMode=release"        >> android/local.properties
-          echo "flutter.versionCode=1"            >> android/local.properties
-          echo "flutter.versionName=1.0.0"        >> android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT"            >  android/local.properties
+          echo "sdk.dir=/usr/local/lib/android/sdk"   >> android/local.properties
+          echo "flutter.versionCode=1"                >> android/local.properties
+          echo "flutter.versionName=1.0.0"            >> android/local.properties
           cat android/local.properties
 
-      # 6. Install NDK
-      - name: Install NDK
-        run: |
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-            "ndk;26.3.11579264" || true
-
-      # 7. Accept all SDK licenses
       - name: Accept Android licenses
-        run: |
-          yes | flutter doctor --android-licenses || true
+        run: yes | flutter doctor --android-licenses || true
 
-      # 8. pub get
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # 9. Analyze (non-fatal)
-      - name: Analyze
+      - name: Analyze (non-fatal)
         run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
         continue-on-error: true
 
-      # 10. Test (non-fatal)
-      - name: Test
+      - name: Test (non-fatal)
         run: flutter test --no-pub
         continue-on-error: true
 
-      # 11. Build universal release APK
       - name: Build APK (universal release)
         run: flutter build apk --release --no-pub
-        env:
-          FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
 
-      # 12. Build split ABI APKs
       - name: Build APK (split per ABI)
         run: flutter build apk --split-per-abi --release --no-pub
-        env:
-          FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
 
-      # 13. Collect APKs
       - name: Collect APKs
         run: |
           mkdir -p output
@@ -97,10 +71,9 @@ jobs:
               cp "$SRC" "output/ChessMaster_${TS}_${LABEL}.apk"
             fi
           done
-          echo "=== APKs ==="
+          echo "=== APKs built ==="
           ls -lh output/
 
-      # 14. Upload artifacts
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -108,7 +81,6 @@ jobs:
           path: output/*.apk
           retention-days: 30
 
-      # 15. GitHub Release (push to main only)
       - name: Create GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: softprops/action-gh-release@v2
@@ -122,7 +94,7 @@ jobs:
             | APK | Device |
             |-----|--------|
             | `*_universal.apk` | All devices |
-            | `*_arm64_v8a.apk` | Modern phones ✅ recommended |
+            | `*_arm64_v8a.apk` | Modern phones ✅ |
             | `*_armeabi_v7a.apk` | Older phones |
             | `*_x86_64.apk` | Emulators |
           files: output/*.apk
