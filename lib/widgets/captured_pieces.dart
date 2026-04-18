@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/chess_piece.dart';
 import '../theme/app_theme.dart';
+import 'chess_piece_svg.dart';
 
 class CapturedPiecesWidget extends StatelessWidget {
   final List<ChessPiece> pieces;
@@ -17,18 +18,14 @@ class CapturedPiecesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sort by value
     final sorted = List<ChessPiece>.from(pieces)
       ..sort((a, b) => a.value.compareTo(b.value));
 
     return Row(
       children: [
         Wrap(
-          spacing: 0,
-          children: sorted.map((p) => Text(
-            p.unicode,
-            style: const TextStyle(fontSize: 16),
-          )).toList(),
+          spacing: -6,
+          children: sorted.map((p) => ChessPieceSvg(piece: p, size: 18)).toList(),
         ),
         if (materialAdvantage > 0)
           Padding(

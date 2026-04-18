@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/chess_piece.dart';
 import '../theme/app_theme.dart';
+import 'chess_piece_svg.dart';
 
 class PromotionDialog extends StatelessWidget {
   final PieceColor color;
@@ -16,7 +17,7 @@ class PromotionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pieces = [PieceType.queen, PieceType.rook, PieceType.bishop, PieceType.knight];
-    
+
     return Dialog(
       backgroundColor: AppTheme.cardColor,
       shape: RoundedRectangleBorder(
@@ -31,9 +32,9 @@ class PromotionDialog extends StatelessWidget {
             Text(
               'PROMOTE PAWN',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppTheme.gold,
-                letterSpacing: 2,
-              ),
+                    color: AppTheme.gold,
+                    letterSpacing: 2,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -56,10 +57,7 @@ class PromotionDialog extends StatelessWidget {
                       border: Border.all(color: AppTheme.gold.withOpacity(0.3)),
                     ),
                     child: Center(
-                      child: Text(
-                        piece.unicode,
-                        style: const TextStyle(fontSize: 40),
-                      ),
+                      child: ChessPieceSvg(piece: piece, size: 48),
                     ),
                   ),
                 );

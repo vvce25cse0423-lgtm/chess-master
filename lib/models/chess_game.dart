@@ -301,9 +301,6 @@ class ChessGame {
       finalMove = move;
     }
 
-    if (moveHistory.isNotEmpty) {
-      moveHistory.removeLast();
-    }
     moveHistory.add(finalMove);
 
     if (captured != null) {

@@ -5,6 +5,7 @@ import '../providers/game_provider.dart';
 import '../models/chess_piece.dart';
 import '../models/chess_move.dart';
 import '../theme/app_theme.dart';
+import 'chess_piece_svg.dart';
 import 'promotion_dialog.dart';
 
 class ChessBoard extends StatelessWidget {
@@ -149,25 +150,17 @@ class ChessBoard extends StatelessWidget {
   }
 
   Widget _buildPiece(ChessPiece piece, bool isSelected) {
-    return AnimatedScale(
-      scale: isSelected ? 1.1 : 1.0,
-      duration: const Duration(milliseconds: 150),
-      child: Center(
-        child: Text(
-          piece.unicode,
-          style: TextStyle(
-            fontSize: 42,
-            height: 1,
-            shadows: [
-              Shadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 4,
-                offset: const Offset(1, 2),
-              ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.maxWidth * 0.88;
+        return Center(
+          child: ChessPieceSvg(
+            piece: piece,
+            size: size,
+            isSelected: isSelected,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
