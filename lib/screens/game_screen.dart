@@ -1,7 +1,6 @@
 // lib/screens/game_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/game_provider.dart';
 import '../models/chess_game.dart';
 import '../models/chess_piece.dart';
@@ -25,7 +24,6 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Consumer<GameProvider>(
       builder: (context, provider, _) {
-        // Show game over dialog
         if (provider.game.isGameOver && !_dialogShown) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _dialogShown = true;
@@ -90,7 +88,8 @@ class _GameScreenState extends State<GameScreen> {
               ),
               child: Text(
                 provider.difficulty.name.toUpperCase(),
-                style: const TextStyle(color: AppTheme.accent, fontSize: 10, letterSpacing: 1),
+                style: const TextStyle(
+                    color: AppTheme.accent, fontSize: 10, letterSpacing: 1),
               ),
             ),
           ],
@@ -103,12 +102,15 @@ class _GameScreenState extends State<GameScreen> {
           tooltip: 'Flip Board',
         ),
         IconButton(
-          icon: Icon(provider.soundEnabled ? Icons.volume_up : Icons.volume_off, size: 20),
+          icon: Icon(
+              provider.soundEnabled ? Icons.volume_up : Icons.volume_off,
+              size: 20),
           onPressed: provider.toggleSound,
           tooltip: 'Sound',
         ),
         IconButton(
-          icon: const Icon(Icons.flag_outlined, size: 20, color: AppTheme.accent),
+          icon: const Icon(Icons.flag_outlined,
+              size: 20, color: AppTheme.accent),
           onPressed: () => _showResignDialog(context, provider),
           tooltip: 'Resign',
         ),
@@ -122,23 +124,21 @@ class _GameScreenState extends State<GameScreen> {
 
     return Column(
       children: [
-        // Status bar
         _buildStatusBar(context, provider),
-        // Black player info
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
           child: PlayerInfoBar(
             playerColor: PieceColor.black,
-            name: provider.gameMode == GameMode.vsAI ? 'Computer (${provider.difficulty.name})' : 'Black',
+            name: provider.gameMode == GameMode.vsAI
+                ? 'Computer (${provider.difficulty.name})'
+                : 'Black',
             isCurrentTurn: isBlackTurn && !provider.game.isGameOver,
           ),
         ),
-        // Board
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: const ChessBoard(),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          child: ChessBoard(),
         ),
-        // White player info
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
           child: PlayerInfoBar(
@@ -147,11 +147,10 @@ class _GameScreenState extends State<GameScreen> {
             isCurrentTurn: isWhiteTurn && !provider.game.isGameOver,
           ),
         ),
-        // Move history
-        Expanded(
+        const Expanded(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: const MoveHistory(),
+            padding: EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: MoveHistory(),
           ),
         ),
       ],
@@ -164,7 +163,6 @@ class _GameScreenState extends State<GameScreen> {
 
     return Row(
       children: [
-        // Board area
         Expanded(
           flex: 3,
           child: Column(
@@ -174,14 +172,16 @@ class _GameScreenState extends State<GameScreen> {
                 padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                 child: PlayerInfoBar(
                   playerColor: PieceColor.black,
-                  name: provider.gameMode == GameMode.vsAI ? 'Computer' : 'Black',
+                  name: provider.gameMode == GameMode.vsAI
+                      ? 'Computer'
+                      : 'Black',
                   isCurrentTurn: isBlackTurn && !provider.game.isGameOver,
                 ),
               ),
-              Expanded(
+              const Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: const ChessBoard(),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: ChessBoard(),
                 ),
               ),
               Padding(
@@ -195,12 +195,11 @@ class _GameScreenState extends State<GameScreen> {
             ],
           ),
         ),
-        // Side panel
-        SizedBox(
+        const SizedBox(
           width: 180,
           child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: const MoveHistory(),
+            padding: EdgeInsets.all(8),
+            child: MoveHistory(),
           ),
         ),
       ],
@@ -208,39 +207,36 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildStatusBar(BuildContext context, GameProvider provider) {
-    String message = '';
-    Color color = AppTheme.textSecondary;
-
-    switch (provider.game.status) {
-      case GameStatus.check:
-        message = '⚠ CHECK!';
-        color = AppTheme.accent;
-        break;
-      case GameStatus.checkmate:
-        message = '♟ CHECKMATE';
-        color = AppTheme.gold;
-        break;
-      case GameStatus.stalemate:
-        message = '⚖ STALEMATE';
-        color = AppTheme.silver;
-        break;
-      case GameStatus.playing:
-        message = provider.game.currentTurn == PieceColor.white 
-          ? '♔ White to move' 
-          : '♚ Black to move';
-        color = AppTheme.textSecondary;
-        break;
-      case GameStatus.resigned:
-        message = '🏳 Game Resigned';
-        color = AppTheme.accent;
-        break;
-      default:
-        message = '';
-    }
+    String message;
+    Color color;
 
     if (provider.isAIThinking) {
       message = '🤖 AI is thinking...';
       color = const Color(0xFF00BCD4);
+    } else {
+      switch (provider.game.status) {
+        case GameStatus.check:
+          message = '⚠ CHECK!';
+          color = AppTheme.accent;
+          break;
+        case GameStatus.checkmate:
+          message = '♟ CHECKMATE';
+          color = AppTheme.gold;
+          break;
+        case GameStatus.stalemate:
+          message = '⚖ STALEMATE';
+          color = AppTheme.silver;
+          break;
+        case GameStatus.resigned:
+          message = '🏳 Game Resigned';
+          color = AppTheme.accent;
+          break;
+        default:
+          message = provider.game.currentTurn == PieceColor.white
+              ? '♔ White to move'
+              : '♚ Black to move';
+          color = AppTheme.textSecondary;
+      }
     }
 
     return AnimatedContainer(
@@ -270,7 +266,11 @@ class _GameScreenState extends State<GameScreen> {
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: AppTheme.accent, width: 1),
         ),
-        title: Text('RESIGN GAME', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppTheme.accent)),
+        title: Text('RESIGN GAME',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(color: AppTheme.accent)),
         content: Text(
           'Are you sure you want to resign? Your opponent wins.',
           style: Theme.of(context).textTheme.bodyMedium,
@@ -303,10 +303,14 @@ class _GameScreenState extends State<GameScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('LEAVE GAME?', style: Theme.of(context).textTheme.titleLarge),
-        content: Text('Current game will be lost.', style: Theme.of(context).textTheme.bodyMedium),
+        title: Text('LEAVE GAME?',
+            style: Theme.of(context).textTheme.titleLarge),
+        content: Text('Current game will be lost.',
+            style: Theme.of(context).textTheme.bodyMedium),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('STAY')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('STAY')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);

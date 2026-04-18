@@ -2,12 +2,18 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    - avoid_print
-    - prefer_const_constructors
-    - prefer_const_literals_to_create_immutables
-    - avoid_unnecessary_containers
-    - sized_box_for_whitespace
+    avoid_print: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    avoid_unnecessary_containers: true
+    sized_box_for_whitespace: true
 
 analyzer:
   errors:
-    invalid_annotation_target: ignore
+    # Downgrade warnings that don't block builds to info
+    unused_import: warning
+    unused_local_variable: warning
+    deprecated_member_use: info
+    prefer_const_constructors: info
+    prefer_const_literals_to_create_immutables: info
+    curly_braces_in_flow_control_structures: info

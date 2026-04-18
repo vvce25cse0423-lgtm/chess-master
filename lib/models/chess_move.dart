@@ -65,8 +65,11 @@ class ChessMove {
     if (type == MoveType.promotion && promotionPiece != null) {
       notation += '=${promotionPiece!.name[0].toUpperCase()}';
     }
-    if (isCheckmate) notation += '#';
-    else if (isCheck) notation += '+';
+    if (isCheckmate) {
+      notation += '#';
+    } else if (isCheck) {
+      notation += '+';
+    }
     return notation;
   }
 }

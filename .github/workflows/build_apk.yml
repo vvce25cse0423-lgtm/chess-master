@@ -61,8 +61,7 @@ jobs:
       # 7. Analyze code
       # ─────────────────────────────────────────
       - name: Analyze code
-        run: flutter analyze --no-pub
-        continue-on-error: true
+        run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
 
       # ─────────────────────────────────────────
       # 8. Build APK (release)

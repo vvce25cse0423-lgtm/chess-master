@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
 import '../models/chess_piece.dart';
 import '../models/chess_move.dart';
-import '../models/chess_game.dart';
 import '../theme/app_theme.dart';
 import 'promotion_dialog.dart';
 
@@ -43,7 +42,6 @@ class ChessBoard extends StatelessWidget {
   Widget _buildBoardGrid(BuildContext context, GameProvider provider) {
     return Column(
       children: List.generate(8, (rowIdx) {
-        final row = provider.boardFlipped ? rowIdx : rowIdx;
         return Expanded(
           child: Row(
             children: List.generate(8, (colIdx) {
