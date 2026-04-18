@@ -7,6 +7,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Required for creating GitHub Releases
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Flutter APK
@@ -32,10 +36,10 @@ jobs:
       # CRITICAL: must run before any Gradle step
       - name: Write local.properties
         run: |
-          echo "flutter.sdk=$FLUTTER_ROOT"            >  android/local.properties
-          echo "sdk.dir=/usr/local/lib/android/sdk"   >> android/local.properties
-          echo "flutter.versionCode=1"                >> android/local.properties
-          echo "flutter.versionName=1.0.0"            >> android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT"           >  android/local.properties
+          echo "sdk.dir=/usr/local/lib/android/sdk"  >> android/local.properties
+          echo "flutter.versionCode=1"               >> android/local.properties
+          echo "flutter.versionName=1.0.0"           >> android/local.properties
           cat android/local.properties
 
       - name: Accept Android licenses
@@ -52,33 +56,23 @@ jobs:
         run: flutter test --no-pub
         continue-on-error: true
 
+      # Build ONLY the universal APK
       - name: Build APK (universal release)
         run: flutter build apk --release --no-pub
 
-      - name: Build APK (split per ABI)
-        run: flutter build apk --split-per-abi --release --no-pub
-
-      - name: Collect APKs
+      - name: Rename APK
         run: |
           mkdir -p output
-          TS=$(date +%Y%m%d_%H%M%S)
           cp build/app/outputs/flutter-apk/app-release.apk \
-             output/ChessMaster_${TS}_universal.apk
-          for ABI in arm64-v8a armeabi-v7a x86_64; do
-            SRC="build/app/outputs/flutter-apk/app-${ABI}-release.apk"
-            if [ -f "$SRC" ]; then
-              LABEL=$(echo $ABI | tr '-' '_')
-              cp "$SRC" "output/ChessMaster_${TS}_${LABEL}.apk"
-            fi
-          done
-          echo "=== APKs built ==="
+             output/ChessMaster-v${{ github.run_number }}.apk
+          echo "=== APK ==="
           ls -lh output/
 
-      - name: Upload APK artifacts
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ChessMaster-APKs
-          path: output/*.apk
+          name: ChessMaster-APK
+          path: output/ChessMaster-v${{ github.run_number }}.apk
           retention-days: 30
 
       - name: Create GitHub Release
@@ -88,15 +82,14 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Chess Master v${{ github.run_number }}
           body: |
-            ## ♟ Chess Master — Build v${{ github.run_number }}
-            Commit: `${{ github.sha }}`
+            ## ♟ Chess Master v${{ github.run_number }}
 
-            | APK | Device |
-            |-----|--------|
-            | `*_universal.apk` | All devices |
-            | `*_arm64_v8a.apk` | Modern phones ✅ |
-            | `*_armeabi_v7a.apk` | Older phones |
-            | `*_x86_64.apk` | Emulators |
-          files: output/*.apk
+            Built from commit `${{ github.sha }}`
+
+            ### Install
+            1. Download `ChessMaster-v${{ github.run_number }}.apk`
+            2. Enable **Install unknown apps** in Android Settings
+            3. Open the APK to install
+          files: output/ChessMaster-v${{ github.run_number }}.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
