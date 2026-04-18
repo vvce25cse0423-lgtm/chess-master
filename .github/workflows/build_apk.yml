@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       # ─────────────────────────────────────────
-      # 2. Set up Java (required for Android build)
+      # 2. Set up Java 17
       # ─────────────────────────────────────────
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -39,10 +39,17 @@ jobs:
           cache: true
 
       # ─────────────────────────────────────────
-      # 4. Check Flutter version
+      # 4. Write local.properties
+      #    (tells Gradle where Flutter SDK lives)
       # ─────────────────────────────────────────
-      - name: Flutter version
-        run: flutter --version
+      - name: Write local.properties
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT"  >> android/local.properties
+          echo "flutter.buildMode=release"   >> android/local.properties
+          echo "flutter.versionName=1.0.0"   >> android/local.properties
+          echo "flutter.versionCode=1"        >> android/local.properties
+          cat android/local.properties
 
       # ─────────────────────────────────────────
       # 5. Install dependencies
@@ -51,7 +58,7 @@ jobs:
         run: flutter pub get
 
       # ─────────────────────────────────────────
-      # 6. Run tests (optional — won't fail if none)
+      # 6. Run tests
       # ─────────────────────────────────────────
       - name: Run tests
         run: flutter test --no-pub
@@ -64,46 +71,41 @@ jobs:
         run: flutter analyze --no-pub --no-fatal-infos --no-fatal-warnings
 
       # ─────────────────────────────────────────
-      # 8. Build APK (release)
+      # 8. Build APK (release universal)
       # ─────────────────────────────────────────
       - name: Build APK (release)
         run: flutter build apk --release --no-pub
 
       # ─────────────────────────────────────────
-      # 9. Build APK (split per ABI — smaller files)
+      # 9. Build split APKs (per ABI)
       # ─────────────────────────────────────────
       - name: Build APK (split per ABI)
         run: flutter build apk --split-per-abi --release --no-pub
 
       # ─────────────────────────────────────────
-      # 10. Rename APKs with timestamp
+      # 10. Collect & rename APKs
       # ─────────────────────────────────────────
-      - name: Rename APKs
+      - name: Collect APKs
         run: |
           mkdir -p output
           TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
           cp build/app/outputs/flutter-apk/app-release.apk \
              output/ChessMaster_${TIMESTAMP}_universal.apk
-          
-          # Split APKs (arm64-v8a is most common modern device)
-          if [ -f build/app/outputs/flutter-apk/app-arm64-v8a-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk \
-               output/ChessMaster_${TIMESTAMP}_arm64.apk
-          fi
-          if [ -f build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
-               output/ChessMaster_${TIMESTAMP}_arm32.apk
-          fi
-          if [ -f build/app/outputs/flutter-apk/app-x86_64-release.apk ]; then
-            cp build/app/outputs/flutter-apk/app-x86_64-release.apk \
-               output/ChessMaster_${TIMESTAMP}_x86_64.apk
-          fi
-          
+
+          for ABI in arm64-v8a armeabi-v7a x86_64; do
+            FILE="build/app/outputs/flutter-apk/app-${ABI}-release.apk"
+            if [ -f "$FILE" ]; then
+              SHORT=$(echo $ABI | tr '-' '_')
+              cp "$FILE" "output/ChessMaster_${TIMESTAMP}_${SHORT}.apk"
+            fi
+          done
+
           echo "=== Built APKs ==="
           ls -lh output/
 
       # ─────────────────────────────────────────
-      # 11. Upload APKs as GitHub Artifacts
+      # 11. Upload artifacts
       # ─────────────────────────────────────────
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
@@ -113,7 +115,7 @@ jobs:
           retention-days: 30
 
       # ─────────────────────────────────────────
-      # 12. Create Release (only on push to main)
+      # 12. Create GitHub Release (on push to main)
       # ─────────────────────────────────────────
       - name: Create GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -122,21 +124,20 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Chess Master v${{ github.run_number }}
           body: |
-            ## ♟ Chess Master - Auto Build
+            ## ♟ Chess Master — Auto Build
 
             Built from commit: `${{ github.sha }}`
-            Branch: `${{ github.ref_name }}`
-            
-            ### 📱 Download Options
-            - **Universal APK** — works on all devices (larger file)
-            - **arm64** — modern Android phones (recommended)
-            - **arm32** — older Android phones
-            - **x86_64** — Android emulators
-            
-            ### Installation
-            1. Download the APK for your device
-            2. Enable "Install from unknown sources" in Settings
-            3. Open the APK to install
+
+            ### 📱 Download
+            | File | Target |
+            |------|--------|
+            | `*_universal.apk` | All devices |
+            | `*_arm64_v8a.apk` | Modern phones (recommended) |
+            | `*_armeabi_v7a.apk` | Older phones |
+            | `*_x86_64.apk` | Emulators |
+
+            ### Install
+            Enable **"Install unknown apps"** in Android Settings, then open the APK.
           files: output/*.apk
           draft: false
           prerelease: false
