@@ -152,7 +152,7 @@ class ChessBoard extends StatelessWidget {
   Widget _buildPiece(ChessPiece piece, bool isSelected) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final size = constraints.maxWidth * 0.88;
+        final size = constraints.maxWidth * 0.92;
         return Center(
           child: ChessPieceSvg(
             piece: piece,
