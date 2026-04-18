@@ -6,8 +6,8 @@ plugins {
 
 android {
     namespace "com.example.chess_master"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdk 34
+    ndkVersion "25.1.8937393"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -18,10 +18,14 @@ android {
         jvmTarget = "17"
     }
 
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+    }
+
     defaultConfig {
         applicationId "com.example.chess_master"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdk 21
+        targetSdk 34
         versionCode flutter.versionCode
         versionName flutter.versionName
     }
@@ -37,4 +41,8 @@ android {
 
 flutter {
     source "../.."
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.10"
 }
